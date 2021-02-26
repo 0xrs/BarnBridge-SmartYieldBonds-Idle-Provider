@@ -10,6 +10,7 @@ contract CompoundProviderMockCompHarvestExpected is CompoundProvider {
 
   function harvest()
     public override
+    returns (uint256)
   {
 
     uint256 rewardBefore = IERC20(rewardCToken).balanceOf(address(this)); // COMP
@@ -37,6 +38,8 @@ contract CompoundProviderMockCompHarvestExpected is CompoundProvider {
       rewardExpected == (rewardGot - rewardBefore),
       "HARVEST TEST FAILED"
     );
+
+    return 0;
   }
 
 

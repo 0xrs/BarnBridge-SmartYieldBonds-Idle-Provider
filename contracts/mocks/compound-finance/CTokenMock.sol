@@ -75,6 +75,18 @@ contract CTokenMock is ICToken, ERC20 {
       return _exchangeRateStored;
     }
 
+    function exchangeRateCurrent() external override view returns (uint256) {
+        return _exchangeRateStored;
+    }
+
+    function supplyRatePerBlock() external override view returns (uint256) {
+      return 0;
+    }
+
+    function accrueInterest() external override returns (uint256) {
+      return 0;
+    }
+
     function underlying() external view override returns (address) {
       return _underlying;
     }

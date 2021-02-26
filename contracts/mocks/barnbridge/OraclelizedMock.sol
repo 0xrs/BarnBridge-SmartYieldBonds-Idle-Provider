@@ -36,9 +36,9 @@ contract OraclelizedMock is HasClock, CompoundProvider {
         _underlyingBalance = underlyingBalance_;
     }
 
-    function setUnderlyingBalance(uint256 underlyingBalance_, uint256 underlyingBalanceLast_) public {
+    function setUnderlyingBalance(uint256 underlyingBalance_, uint256 exchangeRateStoredLast_) public {
         _underlyingBalance = underlyingBalance_;
-        underlyingBalanceLast = underlyingBalanceLast_;
+        exchangeRateStoredLast = exchangeRateStoredLast_;
     }
 
     function setCumulativeSecondlyYieldLast(uint256 cumulativeSecondlyYieldLast_, uint256 timestampLast_) public {

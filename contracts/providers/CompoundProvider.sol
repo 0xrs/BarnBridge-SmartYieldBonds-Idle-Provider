@@ -2,6 +2,8 @@
 pragma solidity ^0.7.6;
 pragma abicoder v2;
 
+import "hardhat/console.sol";
+
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -46,6 +48,8 @@ contract CompoundProvider is IProvider {
     uint256 public harvestedLast;
     // --- /COMP reward checkpoint
 
+    uint256 public exchangeRateStoredLast;
+
     CompState public compState;
 
     bool public _setup;
@@ -61,7 +65,7 @@ contract CompoundProvider is IProvider {
 
         _;
 
-        underlyingBalanceLast = this.underlyingBalance();
+        exchangeRateStoredLast = ICToken(cToken).exchangeRateStored();
     }
 
     function setup(
@@ -144,9 +148,11 @@ contract CompoundProvider is IProvider {
     // called by anyone to convert pool's COMP -> underlying and then deposit it. caller gets HARVEST_REWARD of the harvest
     function harvest()
       external override virtual
+      returns (uint256)
     {
+        uint256 timeElapsed = this.currentTime() - harvestedLast;
         require(
-          harvestedLast < this.currentTime(),
+          timeElapsed > 0,
           "PPC: harvest later"
         );
 
@@ -201,7 +207,7 @@ contract CompoundProvider is IProvider {
 
         if (underlyingGot == 0) {
           // got no goodies :(
-          return;
+          return 0;
         }
 
         uint256 extra;
@@ -232,6 +238,8 @@ contract CompoundProvider is IProvider {
         IERC20(uToken).transfer(caller, reward);
 
         emit Harvest(caller, rewardGot, rewardExpected, underlyingGot - toCaller + extra, extra, reward);
+
+        return(reward);
     }
 
     function transferFees()
@@ -269,7 +277,7 @@ contract CompoundProvider is IProvider {
       external override
     returns(uint256 cumulativeSecondlyYield) {
         _cumulateYieldInternal();
-        underlyingBalanceLast = this.underlyingBalance();
+        exchangeRateStoredLast = ICToken(cToken).exchangeRateStored();
         return (cumulativeSecondlyYieldLast);
     }
 
@@ -284,15 +292,15 @@ contract CompoundProvider is IProvider {
 
         uint32 timeElapsed = blockTimestamp - cumulativeTimestampLast; // overflow is desired
         if (timeElapsed > 0) {
-            if (underlyingBalanceLast > 0) {
+            if (exchangeRateStoredLast > 0) {
               // cumulativeSecondlyYield overflows eventually,
               // due to the way it is used in the oracle that's ok,
               // as long as it doesn't overflow twice during the windowSize
               // see OraclelizedMock.cumulativeOverflowProof() for proof
               cumulativeSecondlyYield +=
-                  // (this.underlyingBalance() - underlyingBalanceLast) * 1e18 -> overflows only if (this.underlyingBalance() - underlyingBalanceLast) >~ 10^41 ETH, DAI, USDC etc
-                  // (this.underlyingBalance() - underlyingBalanceLast) never underflows
-                  ((this.underlyingBalance() - underlyingBalanceLast) * 1e18) / underlyingBalanceLast;
+                  // (exchangeRateStored() - exchangeRateStoredLast) * 1e18 -> overflows only if (exchangeRateStored() - exchangeRateStoredLast) >~ 10^41 ETH, DAI, USDC etc
+                  // (exchangeRateStored() - exchangeRateStoredLast) never underflows
+                  ((ICToken(cToken).exchangeRateStored() - exchangeRateStoredLast) * 1e18) / exchangeRateStoredLast;
             }
         }
 
@@ -370,15 +378,15 @@ contract CompoundProvider is IProvider {
         // only for the first time in the block
         if (timeElapsed > 0) {
             // if there's underlying
-            if (underlyingBalanceLast > 0) {
+            if (exchangeRateStoredLast > 0) {
               // cumulativeSecondlyYieldLast overflows eventually,
               // due to the way it is used in the oracle that's ok,
               // as long as it doesn't overflow twice during the windowSize
               // see OraclelizedMock.cumulativeOverflowProof() for proof
               cumulativeSecondlyYieldLast +=
-                  // (this.underlyingBalance() - underlyingBalanceLast) * 1e18 -> overflows only if (this.underlyingBalance() - underlyingBalanceLast) >~ 10^41 ETH, DAI, USDC etc
-                  // (this.underlyingBalance() - underlyingBalanceLast) never underflows
-                  ((this.underlyingBalance() - underlyingBalanceLast) * 1e18) / underlyingBalanceLast;
+                  // (exchangeRateStored() - exchangeRateStoredLast) * 1e18 -> overflows only if (exchangeRateStored() - exchangeRateStoredLast) >~ 10^41 ETH, DAI, USDC etc
+                  // (exchangeRateStored() - exchangeRateStoredLast) never underflows
+                  ((ICToken(cToken).exchangeRateStored() - exchangeRateStoredLast) * 1e18) / exchangeRateStoredLast;
             }
 
             cumulativeTimestampLast = blockTimestamp;

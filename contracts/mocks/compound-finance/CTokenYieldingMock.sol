@@ -79,6 +79,18 @@ contract CTokenYieldingMock is HasClock, ICToken, ERC20 {
       return (underlyingPrev + underlyingYielded) * 1e18 / totalSupply();
     }
 
+    function exchangeRateCurrent() external override view returns (uint256) {
+        return exchangeRateStored();
+    }
+
+    function supplyRatePerBlock() external override view returns (uint256) {
+      return 0;
+    }
+
+    function accrueInterest() external override returns (uint256) {
+      return 0;
+    }
+
     // helpers
 
 

@@ -13,9 +13,6 @@ abstract contract IProvider is IYieldOraclelizable {
     // fees colected in underlying
     uint256 public underlyingFees;
 
-    // previously measured total underlying
-    uint256 public underlyingBalanceLast;
-
     // CUMULATIVE
     // cumulates (new yield per second) * (seconds since last cumulation)
     uint256 public cumulativeSecondlyYieldLast;
@@ -41,7 +38,7 @@ abstract contract IProvider is IYieldOraclelizable {
 
     function _sendUnderlying(address to_, uint256 amount_) external virtual returns (bool);
 
-    function harvest() external virtual;
+    function harvest() external virtual returns (uint256);
 
     function transferFees() external virtual;
 

@@ -52,6 +52,18 @@ contract CTokenDumbMock is ICToken, ERC20 {
         return exchangeRateStored_;
     }
 
+    function exchangeRateCurrent() public override view returns (uint256) {
+        return exchangeRateStored_;
+    }
+
+    function supplyRatePerBlock() public override view returns (uint256) {
+      return 0;
+    }
+
+    function accrueInterest() external override returns (uint256) {
+      return 0;
+    }
+
     // helpers
 
 
@@ -66,5 +78,7 @@ contract CTokenDumbMock is ICToken, ERC20 {
     function mockBurn(address account, uint256 amount) public {
         _burn(account, amount);
     }
+
+
 
 }

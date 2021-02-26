@@ -6,6 +6,9 @@ interface ICToken {
     function redeem(uint redeemTokens) external returns (uint256);
     function redeemUnderlying(uint redeemAmount) external returns (uint256);
     function exchangeRateStored() external view returns (uint256);
+    function exchangeRateCurrent() external returns (uint256);
+    function supplyRatePerBlock() external view returns (uint256);
+    function accrueInterest() external returns (uint256);
     function underlying() external view returns (address);
     function comptroller() external view returns (address);
 }
