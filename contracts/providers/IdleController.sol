@@ -122,14 +122,14 @@ contract IdleController is IController, IIdleCumulator, IYieldOraclelizable {
     }
 
     function spotDailySupplyRateProvider() public view returns (uint256) {
-        // eg. [5000, 0, 5000, 0] for 50% in compound, 0% fulcrum, 50% aave, 0 dydx. same order of allAvailableTokens
+        // eg. [50000, 0, 50000, 0] for 50% in compound, 0% fulcrum, 50% aave, 0 dydx. same order of allAvailableTokens
         uint256 apr = 0;
         uint256[] memory allocations = IIdleToken(cToken).getAllocations();
         (address[] memory addresses, uint256[] memory aprs) = IIdleToken(cToken).getAPRs();
         for (uint256 i = 0; i<allocations.length; i++) {
             apr = apr.add(allocations[i].mul(aprs[i]));
         }
-        return apr.div(36500).div(10000);
+        return apr.div(36500).div(100000);
     }
 
     function spotDailyDistributionRateProvider() public view returns (uint256) {
